@@ -1,0 +1,348 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+//This program saves information from a user and Serializes the data. Whenever the information is updated, retrieved ,or deleted it is de-
+serialized and altered accordingly
+class Person implements Serializable
+{
+ 
+String name;
+ 
+String phone;
+ 
+String dob;
+ 
+String email;
+ 
+ 
+public Person (String name, String phone, String dob, String email) 
+ 
+{
+ 
+this.name = name;
+ 
+this.phone = phone;
+ 
+this.dob = dob;
+ 
+this.email = email;
+ 
+}
+ 
+ 
+public String toString() {
+ 
+return "Name: " + name + "\nPhone: " + phone + "\nDOB: " + dob + "\nEmail: " + email;
+ 
+}
+}
+ 
+ 
+ 
+public class Serialization 
+{
+ 
+ 
+private static final String FILENAME = "user_info.bin";
+ 
+private static ArrayList<Person> users = new ArrayList<>();
+ 
+ 
+public static void main(String args[]
+)
+ 
+{ 
+ 
+Scanner input = new Scanner(System.in);
+ 
+int choice = 0;
+ 
+ 
+do {
+ 
+System.out.println("Menu:");
+System.out.println("1. Add information into a file");
+System.out.println("2. Retrieve information from a file and display them");
+System.out.println("3. Delete information");
+System.out.println("4. Update information");
+System.out.println("5. Exit");
+System.out.print("Enter your choice: ");
+ 
+choice = input.nextInt();
+ 
+input.nextLine(); // consume the new line
+ 
+switch (choice) {
+ 
+case 1:
+ 
+addUserInfo();
+ 
+break;
+ 
+case 2:
+ 
+retrieveUserInfo();
+ 
+break;
+ 
+case 3:
+ 
+deleteUserInfo();
+ 
+break;
+ 
+case 4:
+ 
+updateUserInfo();
+ 
+break;
+ 
+case 5:
+ 
+System.out.println("Exiting program.");
+break;
+ 
+default:
+ 
+System.out.println("Invalid choice.");
+ 
+}
+ 
+System.out.println();
+ 
+} while (choice != 5);
+ 
+ 
+}
+ 
+ 
+private static void addUserInfo() {
+ 
+Scanner input = new Scanner(System.in);
+ 
+System.out.print("Enter name: ");
+ 
+String name = input.nextLine();
+ 
+System.out.print("Enter phone number: ");
+ 
+String phone = input.nextLine();
+ 
+System.out.print("Enter date of birth (MM/DD/YYYY)
+: ");
+ 
+String dob = input.nextLine();
+ 
+System.out.print("Enter email address: ");
+ 
+String email = input.nextLine();
+ 
+Person user = new Person(name, phone, dob, email);
+ 
+users.add(user);
+ 
+try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILENAME)
+)
+) {
+ 
+out.writeObject(users);
+ 
+System.out.println("User information added successfully.");
+ 
+} catch (IOException e) {
+ 
+System.out.println("Error: " + e.getMessage()
+);
+ 
+}
+ 
+}
+ 
+ 
+private static void retrieveUserInfo() {
+ 
+try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILENAME)
+)
+) {
+ 
+users = (ArrayList<Person>) in.readObject();
+ 
+if (users.isEmpty()
+) {
+ 
+System.out.println("No user information found.");
+return;
+ 
+}
+ 
+System.out.println("User information:");
+for (Person user : users) {
+ 
+System.out.println(user);
+System.out.println();
+ 
+}
+ 
+} catch (ClassNotFoundException | IOException e) {
+ 
+System.out.println("Error: " + e.getMessage()
+);
+ 
+}
+ 
+}
+ 
+ 
+private static void deleteUserInfo() {
+ 
+Scanner input = new Scanner(System.in);
+ 
+System.out.print("Enter the index of the user to delete (starting from 1)
+: ");
+ 
+int index = input.nextInt() - 1;
+ 
+input.nextLine(); // consume the new line
+ 
+if (index < 0 |
+| index >= users.size()
+)
+ 
+ 
+{
+ 
+System.out.println("Invalid index.");
+return;
+ 
+}
+ 
+Person user = users.get(index);
+ 
+users.remove(index);
+ 
+try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILENAME)
+)
+) {
+ 
+out.writeObject(users);
+ 
+System.out.println("User information deleted successfully:");
+System.out.println(user);
+System.out.println();
+ 
+} catch (IOException e) {
+ 
+System.out.println("Error: " + e.getMessage()
+);
+ 
+}
+ 
+catch (InputMismatchException e) {
+ 
+System.out.println("Invalid input. Please enter a number.");
+ 
+input.nextLine(); // consume the invalid input
+ 
+}
+ 
+}
+ 
+ 
+private static void updateUserInfo() {
+ 
+Scanner input = new Scanner(System.in);
+ 
+System.out.print("Enter the index of the user to update (starting from 1)
+: ");
+int index = input.nextInt() - 1;
+ 
+input.nextLine(); // consume the new line
+ 
+if (index < 0 |
+| index >= users.size()
+) {
+ 
+System.out.println("Invalid index.");
+return;
+ 
+}
+ 
+Person user = users.get(index);
+ 
+System.out.println("Current information:");
+System.out.println(user);
+ 
+System.out.print("Enter new name (press enter to keep current value)
+: ");
+String name = input.nextLine();
+if (
+!name.isEmpty()
+) {
+ 
+user.name = name;
+ 
+}
+ 
+System.out.print("Enter new phone number (press enter to keep current value)
+: ");
+String phone = input.nextLine();
+if (
+!phone.isEmpty()
+) {
+ 
+user.phone = phone;
+ 
+}
+ 
+System.out.print("Enter new date of birth (MM/DD/YYYY) (press enter to keep current value)
+: ");
+String dob = input.nextLine();
+if (
+!dob.isEmpty()
+) {
+ 
+user.dob = dob;
+ 
+}
+ 
+System.out.print("Enter new email address (press enter to keep current value)
+: ");
+String email = input.nextLine();
+if (
+!email.isEmpty()
+) {
+ 
+user.email = email;
+ 
+}
+ 
+try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILENAME)
+)
+) {
+ 
+out.writeObject(users);
+ 
+System.out.println("User information updated successfully:");
+System.out.println(user);
+System.out.println();
+ 
+} catch (IOException e) {
+ 
+System.out.println("Error: " + e.getMessage()
+);
+ 
+}
+ 
+}
+ 
+}
